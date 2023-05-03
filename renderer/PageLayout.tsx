@@ -1,9 +1,9 @@
-import { Component, useContext, createEffect } from 'solid-js';
+import { Component } from 'solid-js';
 import { PageContextProvider, usePageContext } from './usePageContext';
 import type { PageContext } from './types';
 import type { Store } from 'solid-js/store';
 import { Dynamic } from 'solid-js/web';
-import { Container, ContainerContext } from './ContainerContext';
+import { Container, ContainerContext, useContainer } from './ContainerContext';
 
 export { PageLayout };
 
@@ -13,19 +13,19 @@ interface Props {
 }
 
 const RenderedOn: Component = () => {
-  const ctx = useContext(ContainerContext);
-  return <>{ctx.type}</>;
+  const container = useContainer()!;
+  return <>{container().type ?? 'uninitialized'}</>;
 };
 
 const PageLayout: Component<Props> = (props) => {
 
-  createEffect(() => console.log('container changed to', props.container.type));
   return (
     <PageContextProvider pageContext={props.pageContext}>
-      <ContainerContext.Provider value={props.container}>
+      {console.log("render", props.container) == null ? '' : ''}
+      <ContainerContext container={props.container}>
         <h2>Container value: <RenderedOn /></h2>
         <Page />
-      </ContainerContext.Provider>
+      </ContainerContext>
     </PageContextProvider>
   );
 };

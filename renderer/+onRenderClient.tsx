@@ -1,37 +1,42 @@
 // https://vite-plugin-ssr.com/onRenderClient
-export default onRenderClient
+export default onRenderClient;
 
-import { hydrate, isServer, render } from 'solid-js/web'
-import { PageLayout } from './PageLayout'
-import type { PageContextBuiltInClientWithClientRouting as PageContextBuiltInClient } from 'vite-plugin-ssr/types'
-import type { PageContext } from './types'
-import { createStore, reconcile } from 'solid-js/store'
+import { hydrate, isServer, render } from 'solid-js/web';
+import { PageLayout } from './PageLayout';
+import type { PageContextBuiltInClientWithClientRouting as PageContextBuiltInClient } from 'vite-plugin-ssr/types';
+import type { PageContext } from './types';
+import { createStore, reconcile } from 'solid-js/store';
+import { createResource } from 'solid-js';
 
-type PageContextClient = PageContextBuiltInClient & PageContext
+type PageContextClient = PageContextBuiltInClient & PageContext;
 
-let dispose: () => void
-let rendered = false
+let dispose: () => void;
+let rendered = false;
 
-const [pageContextStore, setPageContext] = createStore<PageContextClient>({} as PageContextClient)
+const [pageContextStore, setPageContext] = createStore<PageContextClient>({} as PageContextClient);
 
 async function onRenderClient(pageContext: PageContextClient) {
-  pageContext = removeUnmergableInternals(pageContext)
+  pageContext = removeUnmergableInternals(pageContext);
 
   if (!rendered) {
     // Dispose to prevent duplicate pages when navigating.
-    if (dispose) dispose()
+    if (dispose) dispose();
 
-    setPageContext(pageContext)
+    setPageContext(pageContext);
 
-    const container = document.getElementById('page-view')!
+    const container = document.getElementById('page-view')!;
+
     if (pageContext.isHydration) {
-      dispose = hydrate(() => <PageLayout container={{type: isServer ? 'server' : 'client'}} pageContext={pageContextStore} />, container)
+      dispose = hydrate(() => {
+        return (<PageLayout container={{ type: isServer ? 'server' : 'client' }} pageContext={pageContextStore} />);
+      }
+        , container);
     } else {
-      dispose = render(() => <PageLayout container={{type: isServer ? 'server' : 'client'}} pageContext={pageContextStore} />, container)
+      dispose = render(() => <PageLayout container={{ type: isServer ? 'server' : 'client' }} pageContext={pageContextStore} />, container);
     }
-    rendered = true
+    rendered = true;
   } else {
-    setPageContext(reconcile(pageContext))
+    setPageContext(reconcile(pageContext));
   }
 }
 
@@ -44,10 +49,10 @@ async function onRenderClient(pageContext: PageContextClient) {
 // TODO/v1-release: remove workaround since _pageFilesAll and _pageFilesLoaded aren't used by the V1 design
 function removeUnmergableInternals<T>(pageContext: T): T {
   // Remove pageContext properties that cannot be reassigned by reconcile()
-  const pageContextFixed = { ...pageContext }
+  const pageContextFixed = { ...pageContext };
   // @ts-ignore
-  delete pageContextFixed._pageFilesAll
+  delete pageContextFixed._pageFilesAll;
   // @ts-ignore
-  delete pageContextFixed._pageFilesLoaded
-  return pageContextFixed
+  delete pageContextFixed._pageFilesLoaded;
+  return pageContextFixed;
 }
