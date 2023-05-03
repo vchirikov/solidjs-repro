@@ -1,4 +1,4 @@
-import { JSX, Component, useContext, createEffect } from 'solid-js';
+import { Component, useContext, createEffect } from 'solid-js';
 import { PageContextProvider, usePageContext } from './usePageContext';
 import type { PageContext } from './types';
 import type { Store } from 'solid-js/store';
